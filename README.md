@@ -1,12 +1,32 @@
-# React + Vite
+# 🌍 Map-It
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Map-It** is a React-based interactive world map where users can mark visited cities and highlight visited countries.
 
-Currently, two official plugins are available:
+## 🚀 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- ✅ **City Mode** – Click to add markers for visited cities.  
+- ✅ **Country Mode** – Click on countries to color them as visited.  
+- 🗺️ **Built with:** React, Leaflet, and GeoJSON.  
+- 🔧 **Future Plans:** MERN stack integration.  
 
-## Expanding the ESLint configuration
+## 📌 How It Works
 
-If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+1. **City Mode:** Click anywhere on the map to mark a visited city with a pin.  
+2. **Country Mode:** Click on a country to highlight it as visited.  
+3. **Toggle Modes:** Switch between City and Country mode using the button at the top.  
+
+## 🛠 Tech Stack
+
+- **Frontend:** React, React-Leaflet  
+- **Map Data:** GeoJSON  
+
+## 📥 Installation
+
+git clone https://github.com/YOUR_GITHUB_USERNAME/Map-It.git
+
+cd Map-It
+
+npm install
+
+npm start
+
