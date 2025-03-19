@@ -90,14 +90,7 @@ const WorldMap = () => {
 
   return (
     <div className="container">
-      <div className="header">
-        <h1>World Map Travel Tracker</h1>
-        <button className="ui-btn" onClick={() => setMode(mode === "city" ? "country" : "city")}>
-          <span>
-            Switch to {mode === "city" ? "Country Mode" : "City Mode"}
-          </span>
-        </button>
-      </div>
+      
       {mode === "city" && (
         <div className="input-bar">
           <Autosuggest
@@ -110,6 +103,12 @@ const WorldMap = () => {
             inputProps={inputProps}
           />
           <button className="ui-btn" onClick={handleCityAdd}><span>Add City</span></button>
+          <h2>Map It!</h2>
+        <button className="ui-btn" onClick={() => setMode(mode === "city" ? "country" : "city")}>
+          <span>
+            Switch to {mode === "city" ? "Country Mode" : "City Mode"}
+          </span>
+        </button>
         </div>
       )}
       <MapContainer center={[20, 0]} zoom={2} className="map" onClick={handleMapClick} maxZoom={10} minZoom={2}>

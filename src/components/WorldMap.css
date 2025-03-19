@@ -13,7 +13,9 @@
   justify-content: space-between;
 }
 
-.header h1 {
+.input-bar h2 {
+  margin-left: 15px;
+  margin-right: 15px;
   font-size: 20px;
   font-weight: bold;
 }
@@ -25,6 +27,7 @@
   color: white;
   border: none;
 }
+
 
 .map {
   flex: 1;
@@ -44,7 +47,7 @@
 
 .input-bar button {
   padding: 10px;
-  background: #007bff;
+  background: #6ac4f2;
   color: white;
   border: none;
   border-radius: 5px;
@@ -64,6 +67,8 @@
   --font-size: 16px;
   --font-weight: 600;
   --font-family: Menlo,Roboto Mono,monospace;
+  height: 35px;
+  margin-top: 18px;
 }
 
 
@@ -204,3 +209,4 @@
     right: 0;
   }
 }
+
