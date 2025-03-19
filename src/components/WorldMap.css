@@ -1,0 +1,51 @@
+.container {
+    height: 100vh;
+    width: 200vh; 
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .header {
+    padding: 10px;
+    background: #333;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .header h1 {
+    font-size: 20px;
+    font-weight: bold;
+  }
+  
+  .button {
+    background: #007bff;
+    padding: 10px;
+    border-radius: 5px;
+    color: white;
+    border: none;
+  }
+  
+  .map {
+    flex: 1;
+  }
+  
+  .input-bar {
+    margin: 10px 0;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .input-bar input {
+    padding: 10px;
+    width: 300px;
+    margin-right: 10px;
+  }
+  
+  .input-bar button {
+    padding: 10px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+  }
