@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { MapContainer, TileLayer, Marker, GeoJSON } from "react-leaflet";
+import Autosuggest from 'react-autosuggest';
 import "leaflet/dist/leaflet.css";
 import worldGeoJSON from "../world-geo.json"; 
 import L from "leaflet";
@@ -10,6 +11,7 @@ const WorldMap = () => {
   const [visitedCities, setVisitedCities] = useState([]);
   const [visitedCountries, setVisitedCountries] = useState([]);
   const [cityInput, setCityInput] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
 
   const handleMapClick = (e) => {
     if (mode === "city") {
@@ -50,6 +52,42 @@ const WorldMap = () => {
     }
   };
 
+  const onSuggestionsFetchRequested = async ({ value }) => {
+    const apiKey = "b580df691f7642b7b236dacaab04dfa6"; 
+    const response = await fetch(`https://api.opencagedata.com/geocode/v1/json?q=${value}&key=${apiKey}`);
+    const data = await response.json();
+    const citySuggestions = data.results
+      .filter(result => result.components._type === "city")
+      .map(result => ({
+        name: result.formatted,
+        lat: result.geometry.lat,
+        lng: result.geometry.lng
+      }));
+    setSuggestions(citySuggestions);
+  };
+
+  const onSuggestionsClearRequested = () => {
+    setSuggestions([]);
+  };
+
+  const getSuggestionValue = suggestion => suggestion.name;
+
+  const renderSuggestion = suggestion => (
+    <div>
+      {suggestion.name}
+    </div>
+  );
+
+  const onSuggestionSelected = (event, { suggestion }) => {
+    setCityInput(suggestion.name);
+  };
+
+  const inputProps = {
+    placeholder: "Enter city name",
+    value: cityInput,
+    onChange: (e, { newValue }) => setCityInput(newValue)
+  };
+
   return (
     <div className="container">
       <div className="header">
@@ -60,11 +98,14 @@ const WorldMap = () => {
       </div>
       {mode === "city" && (
         <div className="input-bar">
-          <input
-            type="text"
-            value={cityInput}
-            onChange={(e) => setCityInput(e.target.value)}
-            placeholder="Enter city name"
+          <Autosuggest
+            suggestions={suggestions}
+            onSuggestionsFetchRequested={onSuggestionsFetchRequested}
+            onSuggestionsClearRequested={onSuggestionsClearRequested}
+            getSuggestionValue={getSuggestionValue}
+            renderSuggestion={renderSuggestion}
+            onSuggestionSelected={onSuggestionSelected}
+            inputProps={inputProps}
           />
           <button onClick={handleCityAdd}>Add City</button>
         </div>
