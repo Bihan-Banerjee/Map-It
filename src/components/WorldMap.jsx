@@ -7,7 +7,7 @@ import L from "leaflet";
 import "./WorldMap.css"; 
 
 const WorldMap = () => {
-  const [mode, setMode] = useState("city"); // "city" or "country"
+  const [mode, setMode] = useState("city"); 
   const [visitedCities, setVisitedCities] = useState([]);
   const [visitedCountries, setVisitedCountries] = useState([]);
   const [cityInput, setCityInput] = useState("");
@@ -92,8 +92,10 @@ const WorldMap = () => {
     <div className="container">
       <div className="header">
         <h1>World Map Travel Tracker</h1>
-        <button className="button" onClick={() => setMode(mode === "city" ? "country" : "city")}>
-          Switch to {mode === "city" ? "Country Mode" : "City Mode"}
+        <button className="ui-btn" onClick={() => setMode(mode === "city" ? "country" : "city")}>
+          <span>
+            Switch to {mode === "city" ? "Country Mode" : "City Mode"}
+          </span>
         </button>
       </div>
       {mode === "city" && (
@@ -107,7 +109,7 @@ const WorldMap = () => {
             onSuggestionSelected={onSuggestionSelected}
             inputProps={inputProps}
           />
-          <button onClick={handleCityAdd}>Add City</button>
+          <button className="ui-btn" onClick={handleCityAdd}><span>Add City</span></button>
         </div>
       )}
       <MapContainer center={[20, 0]} zoom={2} className="map" onClick={handleMapClick} maxZoom={10} minZoom={2}>
