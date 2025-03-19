@@ -18,20 +18,23 @@ const WorldMap = () => {
     }
   };
 
-  const handleCityAdd = () => {
-    // Assuming you have a function to get city coordinates from the input
-    const cityCoordinates = getCityCoordinates(cityInput);
+  const handleCityAdd = async () => {
+    const cityCoordinates = await getCityCoordinates(cityInput);
     if (cityCoordinates) {
       setVisitedCities([...visitedCities, cityCoordinates]);
       setCityInput("");
     }
   };
 
-  const getCityCoordinates = (cityName) => {
-    // This function should return the coordinates of the city
-    // You can use an API to get the coordinates
-    // For now, let's return a dummy value
-    return { lat: 0, lng: 0 }; // Replace with actual coordinates
+  const getCityCoordinates = async (cityName) => {
+    const apiKey = "b580df691f7642b7b236dacaab04dfa6"; 
+    const response = await fetch(`https://api.opencagedata.com/geocode/v1/json?q=${cityName}&key=${apiKey}`);
+    const data = await response.json();
+    if (data.results.length > 0) {
+      const { lat, lng } = data.results[0].geometry;
+      return { lat, lng };
+    }
+    return null;
   };
 
   const highlightCountry = (e) => {
@@ -66,7 +69,7 @@ const WorldMap = () => {
           <button onClick={handleCityAdd}>Add City</button>
         </div>
       )}
-      <MapContainer center={[20, 0]} zoom={2} className="map" onClick={handleMapClick}>
+      <MapContainer center={[20, 0]} zoom={2} className="map" onClick={handleMapClick} maxZoom={10} minZoom={2}>
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         {mode === "city" &&
           visitedCities.map((city, index) => (
