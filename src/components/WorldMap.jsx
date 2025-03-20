@@ -29,14 +29,24 @@ const WorldMap = () => {
   };
 
   const getCityCoordinates = async (cityName) => {
-    const apiKey = "b580df691f7642b7b236dacaab04dfa6"; 
-    const response = await fetch(`https://api.opencagedata.com/geocode/v1/json?q=${cityName}&key=${apiKey}`);
-    const data = await response.json();
-    if (data.results.length > 0) {
-      const { lat, lng } = data.results[0].geometry;
-      return { lat, lng };
+    try {
+      const apiKey = "b580df691f7642b7b236dacaab04dfa6"; 
+      const response = await fetch(`https://api.opencagedata.com/geocode/v1/json?q=${cityName}&key=${apiKey}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const data = await response.json();
+      if (data.results.length > 0) {
+        const { lat, lng } = data.results[0].geometry;
+        return { lat, lng };
+      } else {
+        throw new Error("No results found for the given city name.");
+      }
+    } catch (error) {
+      console.error("Error fetching city coordinates:", error);
+      alert(`Failed to fetch city coordinates: ${error.message}`);
+      return null;
     }
-    return null;
   };
 
   const highlightCountry = (e) => {
@@ -84,13 +94,18 @@ const WorldMap = () => {
 
   const inputProps = {
     placeholder: "Enter city name",
+    style: {color: "black"},
     value: cityInput,
     onChange: (e, { newValue }) => setCityInput(newValue)
   };
 
   return (
     <div className="container">
-      
+      <button className="ui-btn" onClick={() => setMode(mode === "city" ? "country" : "city")}>
+          <span>
+            Switch to {mode === "city" ? "Country Mode" : "City Mode"}
+          </span>
+        </button>
       {mode === "city" && (
         <div className="input-bar">
           <Autosuggest
@@ -102,15 +117,10 @@ const WorldMap = () => {
             onSuggestionSelected={onSuggestionSelected}
             inputProps={inputProps}
           />
-          <button className="ui-btn" onClick={handleCityAdd}><span>Add City</span></button>
-          <h2>Map It!</h2>
-        <button className="ui-btn" onClick={() => setMode(mode === "city" ? "country" : "city")}>
-          <span>
-            Switch to {mode === "city" ? "Country Mode" : "City Mode"}
-          </span>
-        </button>
+          <button className="ui-btn" onClick={handleCityAdd}><span>Add City</span></button>        
         </div>
       )}
+      
       <MapContainer center={[20, 0]} zoom={2} className="map" onClick={handleMapClick} maxZoom={10} minZoom={2}>
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         {mode === "city" &&
