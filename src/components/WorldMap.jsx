@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MapContainer, TileLayer, Marker, GeoJSON } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, GeoJSON, Tooltip } from "react-leaflet";
 import Autosuggest from 'react-autosuggest';
 import "leaflet/dist/leaflet.css";
 import worldGeoJSON from "../world-geo.json"; 
@@ -15,7 +15,7 @@ const WorldMap = () => {
 
   const handleMapClick = (e) => {
     if (mode === "city") {
-      const newCity = { lat: e.latlng.lat, lng: e.latlng.lng };
+      const newCity = { lat: e.latlng.lat, lng: e.latlng.lng, name: cityInput };
       setVisitedCities([...visitedCities, newCity]);
     }
   };
@@ -23,7 +23,7 @@ const WorldMap = () => {
   const handleCityAdd = async () => {
     const cityCoordinates = await getCityCoordinates(cityInput);
     if (cityCoordinates) {
-      setVisitedCities([...visitedCities, cityCoordinates]);
+      setVisitedCities([...visitedCities, { ...cityCoordinates, name: cityInput }]);
       setCityInput("");
     }
   };
@@ -125,7 +125,9 @@ const WorldMap = () => {
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         {mode === "city" &&
           visitedCities.map((city, index) => (
-            <Marker key={index} position={[city.lat, city.lng]} />
+            <Marker key={index} position={[city.lat, city.lng]}>
+              <Tooltip>{city.name}</Tooltip>
+            </Marker>
           ))}
         {mode === "country" && (
           <GeoJSON data={worldGeoJSON} onEachFeature={(feature, layer) => {
