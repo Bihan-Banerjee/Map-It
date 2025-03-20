@@ -68,7 +68,9 @@ const Loader = () => {
           </g>
         </g>
       </svg>
+      <h1>WELCOME TO MAP IT!</h1>
     </StyledWrapper>
+    
   );
 }
 
