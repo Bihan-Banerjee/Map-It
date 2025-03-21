@@ -165,7 +165,7 @@ const WorldMap = () => {
             }} />
         )}
       </MapContainer>
-      <div className="statistics">
+      <div className="statistics" style={{ top: mode === "city" ? "450px" : "410px" }}>
       {mode === "city" && (
         <p>Cities Visited: {statistics.numCitiesVisited}</p>
       )}

@@ -226,4 +226,12 @@
   display: none;
 }
 
-
+.statistics {
+  position: absolute;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 10px;
+  border-radius: 5px;
+  color: white;
+  z-index: 1000;
+}
