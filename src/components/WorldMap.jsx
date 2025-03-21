@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { MapContainer, TileLayer, Marker, GeoJSON, Tooltip } from "react-leaflet";
 import Autosuggest from 'react-autosuggest';
 import "leaflet/dist/leaflet.css";
@@ -12,7 +12,6 @@ const WorldMap = () => {
   const [visitedCountries, setVisitedCountries] = useState([]);
   const [cityInput, setCityInput] = useState("");
   const [suggestions, setSuggestions] = useState([]);
-  const [dummyState, setDummyState] = useState(0);
   
   const handleMapClick = (e) => {
     if (mode === "city") {
@@ -49,25 +48,17 @@ const WorldMap = () => {
       return null;
     }
   };
-  useEffect(() => {
-    console.log("Visited Countries Updated:", visitedCountries);
-  }, [visitedCountries]);
   const highlightCountry = (e) => {
     if (mode === "country") {
       const countryName = e.target.feature.properties.name;
-      
+  
       setVisitedCountries((prevCountries) => {
-        const newSet = new Set(prevCountries);
-        if (newSet.has(countryName)) {
-          newSet.delete(countryName);
+        if (prevCountries.includes(countryName)) {
+          return prevCountries.filter((c) => c !== countryName);
         } else {
-          newSet.add(countryName);
+          return [...prevCountries, countryName];
         }
-        return newSet;
       });
-
-      
-      setDummyState(dummyState + 1);
     }
   };
   
@@ -140,7 +131,13 @@ const WorldMap = () => {
             </Marker>
           ))}
         {mode === "country" && (
-          <GeoJSON data={worldGeoJSON} onEachFeature={(feature, layer) => {
+          <GeoJSON data={worldGeoJSON} style={(feature) => ({
+            fillColor: visitedCountries.includes(feature.properties.name) ? "green" : "gray",
+            weight: 1,
+            opacity: 1,
+            color: "white",
+            fillOpacity: 0.7,
+          })} onEachFeature={(feature, layer) => {
             layer.on({ click: highlightCountry });
             }} />
         )}
