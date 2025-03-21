@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, GeoJSON, Tooltip } from "react-leaflet";
 import Autosuggest from 'react-autosuggest';
 import "leaflet/dist/leaflet.css";
@@ -12,7 +12,8 @@ const WorldMap = () => {
   const [visitedCountries, setVisitedCountries] = useState([]);
   const [cityInput, setCityInput] = useState("");
   const [suggestions, setSuggestions] = useState([]);
-
+  const [dummyState, setDummyState] = useState(0);
+  
   const handleMapClick = (e) => {
     if (mode === "city") {
       const newCity = { lat: e.latlng.lat, lng: e.latlng.lng, name: cityInput };
@@ -48,20 +49,28 @@ const WorldMap = () => {
       return null;
     }
   };
-
+  useEffect(() => {
+    console.log("Visited Countries Updated:", visitedCountries);
+  }, [visitedCountries]);
   const highlightCountry = (e) => {
-    const countryName = e.target.feature.properties.name;
     if (mode === "country") {
-      if (visitedCountries.includes(countryName)) {
-        setVisitedCountries(visitedCountries.filter((country) => country !== countryName));
-        e.target.setStyle({ fillColor: "#3388ff", fillOpacity: 0.2 });
-      } else {
-        setVisitedCountries([...visitedCountries, countryName]);
-        e.target.setStyle({ fillColor: "#ff5733", fillOpacity: 0.7 });
-      }
+      const countryName = e.target.feature.properties.name;
+      
+      setVisitedCountries((prevCountries) => {
+        const newSet = new Set(prevCountries);
+        if (newSet.has(countryName)) {
+          newSet.delete(countryName);
+        } else {
+          newSet.add(countryName);
+        }
+        return newSet;
+      });
+
+      
+      setDummyState(dummyState + 1);
     }
   };
-
+  
   const onSuggestionsFetchRequested = async ({ value }) => {
     const apiKey = "b580df691f7642b7b236dacaab04dfa6"; 
     const response = await fetch(`https://api.opencagedata.com/geocode/v1/json?q=${value}&key=${apiKey}`);
@@ -75,6 +84,7 @@ const WorldMap = () => {
       }));
     setSuggestions(citySuggestions);
   };
+
 
   const onSuggestionsClearRequested = () => {
     setSuggestions([]);
@@ -132,7 +142,7 @@ const WorldMap = () => {
         {mode === "country" && (
           <GeoJSON data={worldGeoJSON} onEachFeature={(feature, layer) => {
             layer.on({ click: highlightCountry });
-          }} />
+            }} />
         )}
       </MapContainer>
     </div>
