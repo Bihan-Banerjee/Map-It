@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, GeoJSON, Tooltip } from "react-leaflet";
 import Autosuggest from 'react-autosuggest';
 import "leaflet/dist/leaflet.css";
@@ -20,6 +20,29 @@ const WorldMap = () => {
     }
   };
 
+  const [statistics, setStatistics] = useState({
+    numCitiesVisited: 0,
+    numCountriesVisited: 0,
+    percentageWorldExplored: 0,
+  });
+
+  const calculateStatistics = () => {
+    const numCitiesVisited = visitedCities.length;
+    const numCountriesVisited = visitedCountries.length;
+    const totalCountries = worldGeoJSON.features.length;
+    const percentageWorldExplored = (numCountriesVisited / totalCountries) * 100;
+  
+    setStatistics({
+      numCitiesVisited,
+      numCountriesVisited,
+      percentageWorldExplored,
+    });
+  };
+
+  useEffect(() => {
+    calculateStatistics();
+  }, [visitedCities, visitedCountries]);
+  
   const handleCityAdd = async () => {
     const cityCoordinates = await getCityCoordinates(cityInput);
     if (cityCoordinates) {
@@ -142,6 +165,17 @@ const WorldMap = () => {
             }} />
         )}
       </MapContainer>
+      <div className="statistics">
+      {mode === "city" && (
+        <p>Cities Visited: {statistics.numCitiesVisited}</p>
+      )}
+      {mode === "country" && (
+        <>
+          <p>Countries Visited: {statistics.numCountriesVisited}</p>
+          <p>Percentage of World Explored: {statistics.percentageWorldExplored.toFixed(2)}%</p>
+        </>
+      )}
+    </div>
     </div>
   );
 };
