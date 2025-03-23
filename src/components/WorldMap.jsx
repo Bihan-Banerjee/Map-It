@@ -5,6 +5,7 @@ import "leaflet/dist/leaflet.css";
 import worldGeoJSON from "../world-geo.json"; 
 import L from "leaflet";
 import "./WorldMap.css"; 
+import axios from "axios";
 
 const WorldMap = () => {
   const [mode, setMode] = useState("city"); 
@@ -53,7 +54,8 @@ const WorldMap = () => {
 
   const getCityCoordinates = async (cityName) => {
     try {
-      const apiKey = "b580df691f7642b7b236dacaab04dfa6"; 
+      const apiKey = import.meta.env.VITE_OPENCAGE_API_KEY;
+      console.log(apiKey);
       const response = await fetch(`https://api.opencagedata.com/geocode/v1/json?q=${cityName}&key=${apiKey}`);
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
@@ -86,7 +88,8 @@ const WorldMap = () => {
   };
   
   const onSuggestionsFetchRequested = async ({ value }) => {
-    const apiKey = "b580df691f7642b7b236dacaab04dfa6"; 
+    const apiKey = import.meta.env.VITE_OPENCAGE_API_KEY;
+    console.log(apiKey);
     const response = await fetch(`https://api.opencagedata.com/geocode/v1/json?q=${value}&key=${apiKey}`);
     const data = await response.json();
     const citySuggestions = data.results
@@ -111,6 +114,20 @@ const WorldMap = () => {
       {suggestion.name}
     </div>
   );
+
+  const saveData = async () => {
+    try {
+      const statistics = calculateStatistics();
+      const response = await axios.post('http://localhost:5000/api/save-data', {
+        visitedCities: visitedCities,
+        visitedCountries: visitedCountries,
+        statistics: statistics,
+      });
+      console.log(response.data);
+    } catch (error) {
+      console.error('Failed to save data:', error);
+    }
+  };
 
   const onSuggestionSelected = (event, { suggestion }) => {
     setCityInput(suggestion.name);
