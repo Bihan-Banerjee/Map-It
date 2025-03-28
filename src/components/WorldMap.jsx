@@ -176,7 +176,7 @@ const WorldMap = () => {
         
         {mode === "city" && visitedCities.map((city, index) => (
           <Marker key={index} position={[city.lat, city.lng]}>
-            <Tooltip>{city.name}</Tooltip>
+            <Tooltip>{city.name.split(',')[0]}</Tooltip>
           </Marker>
         ))}
 
