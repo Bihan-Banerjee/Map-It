@@ -37,6 +37,7 @@
 
 .map {
   flex: 1;
+  overflow: hidden;
 }
 
 .input-bar {
@@ -81,6 +82,7 @@
   --font-weight: 600;
   --font-family: Menlo,Roboto Mono,monospace;
   height: 35px;
+  outline: none;
 }
 
 
@@ -98,6 +100,7 @@
   transition: var(--btn-transition);
   overflow: hidden;
   box-shadow: var(--btn-shadow);
+  outline: none;
 }
 
 .ui-btn span {
@@ -228,7 +231,7 @@
 
 .statistics {
   position: absolute;
-  left: 10px;
+  left: 1.75%;
   background: rgba(0, 0, 0, 0.5);
   padding: 10px;
   border-radius: 5px;

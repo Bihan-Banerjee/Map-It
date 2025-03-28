@@ -13,41 +13,45 @@ const WorldMap = () => {
   const [visitedCountries, setVisitedCountries] = useState([]);
   const [cityInput, setCityInput] = useState("");
   const [suggestions, setSuggestions] = useState([]);
-  
-  const handleMapClick = (e) => {
-    if (mode === "city") {
-      const newCity = { lat: e.latlng.lat, lng: e.latlng.lng, name: cityInput };
-      setVisitedCities([...visitedCities, newCity]);
-    }
-  };
-
   const [statistics, setStatistics] = useState({
     numCitiesVisited: 0,
     numCountriesVisited: 0,
     percentageWorldExplored: 0,
   });
 
-  const calculateStatistics = () => {
-    const numCitiesVisited = visitedCities.length;
-    const numCountriesVisited = visitedCountries.length;
-    const totalCountries = worldGeoJSON.features.length;
-    const percentageWorldExplored = (numCountriesVisited / totalCountries) * 100;
-  
-    setStatistics({
-      numCitiesVisited,
-      numCountriesVisited,
-      percentageWorldExplored,
-    });
-  };
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/load-data');
+        const { visitedCities, visitedCountries } = response.data;
+        setVisitedCities(visitedCities || []);
+        setVisitedCountries(visitedCountries || []);
+      } catch (error) {
+        console.error("Failed to load data:", error);
+      }
+    };
+    loadData();
+  }, []);
 
   useEffect(() => {
-    calculateStatistics();
+    const totalCountries = worldGeoJSON.features.length;
+    const percentageWorldExplored = (visitedCountries.length / totalCountries) * 100;
+    setStatistics({
+      numCitiesVisited: visitedCities.length,
+      numCountriesVisited: visitedCountries.length,
+      percentageWorldExplored: percentageWorldExplored,
+    });
   }, [visitedCities, visitedCountries]);
-  
-  const handleCityAdd = async () => {
-    const cityCoordinates = await getCityCoordinates(cityInput);
-    if (cityCoordinates) {
-      setVisitedCities([...visitedCities, { ...cityCoordinates, name: cityInput }]);
+
+  const handleMapClick = (e) => {
+    if (mode === "city" && cityInput.trim()) {
+      const newCity = {
+        name: cityInput,
+        lat: e.latlng.lat,
+        lng: e.latlng.lng,
+        visitedAt: new Date().toISOString(),
+      };
+      setVisitedCities([...visitedCities, newCity]);
       setCityInput("");
     }
   };
@@ -55,98 +59,96 @@ const WorldMap = () => {
   const getCityCoordinates = async (cityName) => {
     try {
       const apiKey = import.meta.env.VITE_OPENCAGE_API_KEY;
-      console.log(apiKey);
-      const response = await fetch(`https://api.opencagedata.com/geocode/v1/json?q=${cityName}&key=${apiKey}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
+      const response = await fetch(
+        `https://api.opencagedata.com/geocode/v1/json?q=${cityName}&key=${apiKey}`
+      );
       const data = await response.json();
       if (data.results.length > 0) {
-        const { lat, lng } = data.results[0].geometry;
-        return { lat, lng };
-      } else {
-        throw new Error("No results found for the given city name.");
+        return data.results[0].geometry;
       }
+      throw new Error("City not found");
     } catch (error) {
-      console.error("Error fetching city coordinates:", error);
-      alert(`Failed to fetch city coordinates: ${error.message}`);
+      console.error("Error fetching coordinates:", error);
+      alert("Failed to find city. Please try another name.");
       return null;
     }
   };
+
+  const handleCityAdd = async () => {
+    if (!cityInput.trim()) return;
+    const coordinates = await getCityCoordinates(cityInput);
+    if (coordinates) {
+      const newCity = {
+        name: cityInput,
+        lat: coordinates.lat,
+        lng: coordinates.lng,
+        visitedAt: new Date().toISOString(),
+      };
+      setVisitedCities([...visitedCities, newCity]);
+      setCityInput("");
+    }
+  };
+
   const highlightCountry = (e) => {
     if (mode === "country") {
       const countryName = e.target.feature.properties.name;
-  
-      setVisitedCountries((prevCountries) => {
-        if (prevCountries.includes(countryName)) {
-          return prevCountries.filter((c) => c !== countryName);
-        } else {
-          return [...prevCountries, countryName];
-        }
-      });
+      setVisitedCountries((prev) =>
+        prev.includes(countryName)
+          ? prev.filter((c) => c !== countryName)
+          : [...prev, countryName]
+      );
     }
   };
-  
+
+  const saveData = async () => {
+    try {
+      const response = await axios.post('http://localhost:5000/api/save-data', {
+        visitedCities,
+        visitedCountries,
+        statistics,
+      });
+      console.log("Data saved:", response.data);
+      alert("Data saved successfully!");
+    } catch (error) {
+      console.error("Save failed:", error);
+      alert("Failed to save data.");
+    }
+  };
+
   const onSuggestionsFetchRequested = async ({ value }) => {
     const apiKey = import.meta.env.VITE_OPENCAGE_API_KEY;
-    console.log(apiKey);
-    const response = await fetch(`https://api.opencagedata.com/geocode/v1/json?q=${value}&key=${apiKey}`);
+    const response = await fetch(
+      `https://api.opencagedata.com/geocode/v1/json?q=${value}&key=${apiKey}`
+    );
     const data = await response.json();
     const citySuggestions = data.results
-      .filter(result => result.components._type === "city")
-      .map(result => ({
+      .filter((result) => result.components._type === "city")
+      .map((result) => ({
         name: result.formatted,
         lat: result.geometry.lat,
-        lng: result.geometry.lng
+        lng: result.geometry.lng,
       }));
     setSuggestions(citySuggestions);
   };
 
-
-  const onSuggestionsClearRequested = () => {
-    setSuggestions([]);
-  };
-
-  const getSuggestionValue = suggestion => suggestion.name;
-
-  const renderSuggestion = suggestion => (
-    <div>
-      {suggestion.name}
-    </div>
-  );
-
-  const saveData = async () => {
-    try {
-      const statistics = calculateStatistics();
-      const response = await axios.post('http://localhost:5000/api/save-data', {
-        visitedCities: visitedCities,
-        visitedCountries: visitedCountries,
-        statistics: statistics,
-      });
-      console.log(response.data);
-    } catch (error) {
-      console.error('Failed to save data:', error);
-    }
-  };
-
-  const onSuggestionSelected = (event, { suggestion }) => {
-    setCityInput(suggestion.name);
-  };
+  const onSuggestionsClearRequested = () => setSuggestions([]);
+  const getSuggestionValue = (suggestion) => suggestion.name;
+  const renderSuggestion = (suggestion) => <div>{suggestion.name}</div>;
+  const onSuggestionSelected = (_, { suggestion }) => setCityInput(suggestion.name);
 
   const inputProps = {
     placeholder: "Enter city name",
-    style: {color: "black"},
     value: cityInput,
-    onChange: (e, { newValue }) => setCityInput(newValue)
+    onChange: (e, { newValue }) => setCityInput(newValue),
+    style: { color: "black" },
   };
 
   return (
     <div className="container">
       <button className="ui-btn" onClick={() => setMode(mode === "city" ? "country" : "city")}>
-          <span>
-            Switch to {mode === "city" ? "Country Mode" : "City Mode"}
-          </span>
-        </button>
+        Switch to {mode === "city" ? "Country Mode" : "City Mode"}
+      </button>
+
       {mode === "city" && (
         <div className="input-bar">
           <Autosuggest
@@ -158,41 +160,53 @@ const WorldMap = () => {
             onSuggestionSelected={onSuggestionSelected}
             inputProps={inputProps}
           />
-          <button className="ui-btn" onClick={handleCityAdd}><span>Add City</span></button>        
+          <button className="ui-btn" onClick={handleCityAdd}>Add City</button>
         </div>
       )}
-      
-      <MapContainer center={[20, 0]} zoom={2} className="map" onClick={handleMapClick} maxZoom={10} minZoom={2}>
+
+      <MapContainer
+        center={[20, 0]}
+        zoom={2}
+        className="map"
+        onClick={handleMapClick}
+        maxZoom={10}
+        minZoom={2}
+      >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-        {mode === "city" &&
-          visitedCities.map((city, index) => (
-            <Marker key={index} position={[city.lat, city.lng]}>
-              <Tooltip>{city.name}</Tooltip>
-            </Marker>
-          ))}
+        
+        {mode === "city" && visitedCities.map((city, index) => (
+          <Marker key={index} position={[city.lat, city.lng]}>
+            <Tooltip>{city.name}</Tooltip>
+          </Marker>
+        ))}
+
         {mode === "country" && (
-          <GeoJSON data={worldGeoJSON} style={(feature) => ({
-            fillColor: visitedCountries.includes(feature.properties.name) ? "green" : "gray",
-            weight: 1,
-            opacity: 1,
-            color: "white",
-            fillOpacity: 0.7,
-          })} onEachFeature={(feature, layer) => {
-            layer.on({ click: highlightCountry });
-            }} />
+          <GeoJSON
+            data={worldGeoJSON}
+            style={(feature) => ({
+              fillColor: visitedCountries.includes(feature.properties.name) ? "green" : "gray",
+              weight: 1,
+              opacity: 1,
+              color: "white",
+              fillOpacity: 0.7,
+            })}
+            onEachFeature={(feature, layer) => {
+              layer.on({ click: highlightCountry });
+            }}
+          />
         )}
       </MapContainer>
-      <div className="statistics" style={{ top: mode === "city" ? "450px" : "410px" }}>
-      {mode === "city" && (
-        <p>Cities Visited: {statistics.numCitiesVisited}</p>
-      )}
-      {mode === "country" && (
-        <>
-          <p>Countries Visited: {statistics.numCountriesVisited}</p>
-          <p>Percentage of World Explored: {statistics.percentageWorldExplored.toFixed(2)}%</p>
-        </>
-      )}
-    </div>
+
+      <div className="statistics" style={{ top: mode === "city" ? "80vh" : "74vh" }}>
+        {mode === "city" && <p>Cities Visited: {statistics.numCitiesVisited}</p>}
+        {mode === "country" && (
+          <>
+            <p>Countries Visited: {statistics.numCountriesVisited}</p>
+            <p>Percentage of World Explored: {statistics.percentageWorldExplored.toFixed(2)}%</p>
+          </>
+        )}
+        <button className="ui-btn" onClick={saveData}>Save Data</button>
+      </div>
     </div>
   );
 };
