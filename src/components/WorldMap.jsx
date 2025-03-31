@@ -22,7 +22,10 @@ const WorldMap = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/load-data');
+        const token = localStorage.getItem("token"); 
+        const response = await axios.get("http://localhost:5000/api/get-data", {
+          headers: { Authorization: `Bearer ${token}` }, 
+        });
         const { visitedCities, visitedCountries } = response.data;
         setVisitedCities(visitedCities || []);
         setVisitedCountries(visitedCountries || []);
@@ -102,18 +105,32 @@ const WorldMap = () => {
 
   const saveData = async () => {
     try {
-      const response = await axios.post('http://localhost:5000/api/save-data', {
-        visitedCities,
-        visitedCountries,
-        statistics,
-      });
-      console.log("Data saved:", response.data);
-      alert("Data saved successfully!");
+      const token = localStorage.getItem('token');
+      await axios.post('http://localhost:5000/api/save-data', 
+        { visitedCities, visitedCountries, statistics },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      console.log("Data saved successfully!");
     } catch (error) {
       console.error("Save failed:", error);
-      alert("Failed to save data.");
     }
   };
+
+  
+useEffect(() => {
+  const loadData = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:5000/api/get-data', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+    } catch (error) {
+      console.error("Failed to load data:", error);
+    }
+  };
+  loadData();
+}, []);
 
   const onSuggestionsFetchRequested = async ({ value }) => {
     const apiKey = import.meta.env.VITE_OPENCAGE_API_KEY;
