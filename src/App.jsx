@@ -8,7 +8,13 @@ import Loader from "./components/Loader";
 function App() {
   const [loading, setLoading] = useState(true);
   const isAuthenticated = !!localStorage.getItem("token");
-
+  
+  useEffect(() => {
+    if (!localStorage.getItem("token")) {
+      localStorage.setItem("token", "false");
+    }
+  }, []);
+  
   useEffect(() => {
     setTimeout(() => {
       setLoading(false);
