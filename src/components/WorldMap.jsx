@@ -162,8 +162,8 @@ useEffect(() => {
 
   return (
     <div className="container">
-      <button className="ui-btn" onClick={() => setMode(mode === "city" ? "country" : "city")}>
-        Switch to {mode === "city" ? "Country Mode" : "City Mode"}
+      <button className="ui-btn header" onClick={() => setMode(mode === "city" ? "country" : "city")}>
+        <span>Switch to {mode === "city" ? "Country Mode" : "City Mode"}</span>
       </button>
 
       {mode === "city" && (
@@ -177,7 +177,7 @@ useEffect(() => {
             onSuggestionSelected={onSuggestionSelected}
             inputProps={inputProps}
           />
-          <button className="ui-btn" onClick={handleCityAdd}>Add City</button>
+          <button className="ui-btn" onClick={handleCityAdd}><span>Add City</span></button>
         </div>
       )}
 
@@ -214,7 +214,7 @@ useEffect(() => {
         )}
       </MapContainer>
 
-      <div className="statistics" style={{ top: mode === "city" ? "80vh" : "74vh" }}>
+      <div className="statistics" style={{ top: mode === "city" ? "80vh" : "71vh" }}>
         {mode === "city" && <p>Cities Visited: {statistics.numCitiesVisited}</p>}
         {mode === "country" && (
           <>
@@ -222,7 +222,7 @@ useEffect(() => {
             <p>Percentage of World Explored: {statistics.percentageWorldExplored.toFixed(2)}%</p>
           </>
         )}
-        <button className="ui-btn" onClick={saveData}>Save Data</button>
+        <button className="ui-btn" onClick={saveData}><span>Save Data</span></button>
       </div>
     </div>
   );
