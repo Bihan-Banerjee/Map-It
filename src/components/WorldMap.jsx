@@ -6,6 +6,7 @@ import worldGeoJSON from "../world-geo.json";
 import L from "leaflet";
 import "./WorldMap.css"; 
 import axios from "axios";
+import Loader from "./Loader";
 
 const WorldMap = () => {
   const [mode, setMode] = useState("city"); 
@@ -18,6 +19,26 @@ const WorldMap = () => {
     numCountriesVisited: 0,
     percentageWorldExplored: 0,
   });
+  const [userName, setUserName] = useState("");
+
+  useEffect(() => {
+    const fetchUserName = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get("http://localhost:5000/api/get-username", {
+          headers: { Authorization: `Bearer ${token}` }, 
+        });
+        const { username } = response.data; 
+        setUserName(username || "Guest"); 
+      } catch (error) {
+        console.error("Failed to fetch username:", error);
+        setUserName("Guest"); 
+      }
+    };
+  
+    fetchUserName();
+  }, []);
+
 
   useEffect(() => {
     const loadData = async () => {
@@ -160,70 +181,87 @@ useEffect(() => {
     style: { color: "black" },
   };
 
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true); 
+    const timer = setTimeout(() => {
+      setLoading(false); 
+    }, 4000);
+  
+    return () => clearTimeout(timer); 
+  }, []);
+
   return (
-    <div className="container">
-      <button className="ui-btn header" onClick={() => setMode(mode === "city" ? "country" : "city")}>
-        <span>Switch to {mode === "city" ? "Country Mode" : "City Mode"}</span>
-      </button>
+    <div>
+      {loading && <Loader state={loading} />}
+      {!loading && (
+      <div className="container">
+        <span className="welcome">Welcome, {userName}</span>
+        <button className="ui-btn header" onClick={() => setMode(mode === "city" ? "country" : "city")}>
+          <span>Switch to {mode === "city" ? "Country Mode" : "City Mode"}</span>
+        </button>
 
-      {mode === "city" && (
-        <div className="input-bar">
-          <Autosuggest
-            suggestions={suggestions}
-            onSuggestionsFetchRequested={onSuggestionsFetchRequested}
-            onSuggestionsClearRequested={onSuggestionsClearRequested}
-            getSuggestionValue={getSuggestionValue}
-            renderSuggestion={renderSuggestion}
-            onSuggestionSelected={onSuggestionSelected}
-            inputProps={inputProps}
-          />
-          <button className="ui-btn" onClick={handleCityAdd}><span>Add City</span></button>
+        {mode === "city" && (
+          <div className="input-bar">
+            <Autosuggest
+              suggestions={suggestions}
+              onSuggestionsFetchRequested={onSuggestionsFetchRequested}
+              onSuggestionsClearRequested={onSuggestionsClearRequested}
+              getSuggestionValue={getSuggestionValue}
+              renderSuggestion={renderSuggestion}
+              onSuggestionSelected={onSuggestionSelected}
+              inputProps={inputProps}
+            />
+            <button className="ui-btn search_button" onClick={handleCityAdd}><span>Add City</span></button>
+          </div>
+        )}
+
+        <MapContainer
+          center={[20, 0]}
+          zoom={2}
+          className="map"
+          onClick={handleMapClick}
+          maxZoom={10}
+          minZoom={2}
+        >
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+          {mode === "city" && visitedCities.map((city, index) => (
+            <Marker key={index} position={[city.lat, city.lng]}>
+              <Tooltip>{city.name.split(',')[0]}</Tooltip>
+            </Marker>
+          ))}
+
+          {mode === "country" && (
+            <GeoJSON
+              data={worldGeoJSON}
+              style={(feature) => ({
+                fillColor: visitedCountries.includes(feature.properties.name) ? "green" : "gray",
+                weight: 1,
+                opacity: 1,
+                color: "white",
+                fillOpacity: 0.7,
+              })}
+              onEachFeature={(feature, layer) => {
+                layer.on({ click: highlightCountry });
+              }}
+            />
+          )}
+        </MapContainer>
+
+        <div className="statistics" style={{ top: mode === "city" ? "80vh" : "71vh" }}>
+          {mode === "city" && <p>Cities Visited: {statistics.numCitiesVisited}</p>}
+          {mode === "country" && (
+            <>
+              <p>Countries Visited: {statistics.numCountriesVisited}</p>
+              <p>Percentage of World Explored: {statistics.percentageWorldExplored.toFixed(2)}%</p>
+            </>
+          )}
+          <button className="ui-btn stat" onClick={saveData}><span>Save Data</span></button>
         </div>
-      )}
-
-      <MapContainer
-        center={[20, 0]}
-        zoom={2}
-        className="map"
-        onClick={handleMapClick}
-        maxZoom={10}
-        minZoom={2}
-      >
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-        
-        {mode === "city" && visitedCities.map((city, index) => (
-          <Marker key={index} position={[city.lat, city.lng]}>
-            <Tooltip>{city.name.split(',')[0]}</Tooltip>
-          </Marker>
-        ))}
-
-        {mode === "country" && (
-          <GeoJSON
-            data={worldGeoJSON}
-            style={(feature) => ({
-              fillColor: visitedCountries.includes(feature.properties.name) ? "green" : "gray",
-              weight: 1,
-              opacity: 1,
-              color: "white",
-              fillOpacity: 0.7,
-            })}
-            onEachFeature={(feature, layer) => {
-              layer.on({ click: highlightCountry });
-            }}
-          />
-        )}
-      </MapContainer>
-
-      <div className="statistics" style={{ top: mode === "city" ? "80vh" : "71vh" }}>
-        {mode === "city" && <p>Cities Visited: {statistics.numCitiesVisited}</p>}
-        {mode === "country" && (
-          <>
-            <p>Countries Visited: {statistics.numCountriesVisited}</p>
-            <p>Percentage of World Explored: {statistics.percentageWorldExplored.toFixed(2)}%</p>
-          </>
-        )}
-        <button className="ui-btn" onClick={saveData}><span>Save Data</span></button>
       </div>
+      )}
     </div>
   );
 };

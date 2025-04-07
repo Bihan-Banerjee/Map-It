@@ -136,12 +136,14 @@ function Register() {
         <div className="form-container">
         <form onSubmit={handleSubmit}>
           <input
+            required
             name="username"
             placeholder="Username"
             value={formData.username}
             onChange={handleChange}
           />
           <input
+            required
             name="email"
             type="email"
             placeholder="Email"
@@ -149,6 +151,7 @@ function Register() {
             onChange={handleChange}
           />
           <input
+            required
             name="password"
             type="password"
             placeholder="Password"

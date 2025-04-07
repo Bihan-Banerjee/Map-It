@@ -24,7 +24,7 @@ function App() {
   return (
     <Router>
     <Routes>
-      <Route path="/" element={isAuthenticated ? <Navigate to="/world-map" /> : <Navigate to="/register" />} />
+      <Route path="/" element={<Register />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route
