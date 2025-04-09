@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, GeoJSON, Tooltip } from "react-leaflet";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { MapContainer, TileLayer, Marker, GeoJSON, Tooltip as LeafletTooltip } from "react-leaflet";
 import Autosuggest from 'react-autosuggest';
 import "leaflet/dist/leaflet.css";
 import worldGeoJSON from "../world-geo.json"; 
@@ -7,6 +7,8 @@ import L from "leaflet";
 import "./WorldMap.css"; 
 import axios from "axios";
 import Loader from "./Loader";
+import { debounce } from 'lodash';
+
 
 const WorldMap = () => {
   const [mode, setMode] = useState("city"); 
@@ -20,6 +22,8 @@ const WorldMap = () => {
     percentageWorldExplored: 0,
   });
   const [userName, setUserName] = useState("");
+  const [hoverCountryInfo, setHoverCountryInfo] = useState(null);
+  const countryCache = useRef(new Map());
 
   useEffect(() => {
     const fetchUserName = async () => {
@@ -35,10 +39,8 @@ const WorldMap = () => {
         setUserName("Guest"); 
       }
     };
-  
     fetchUserName();
   }, []);
-
 
   useEffect(() => {
     const loadData = async () => {
@@ -124,6 +126,29 @@ const WorldMap = () => {
     }
   };
 
+  const fetchCountryInfo = async (countryName) => {
+    if (countryCache.current.has(countryName)) {
+      setHoverCountryInfo(countryCache.current.get(countryName));
+      return;
+    }
+    try {
+      const res = await axios.get(`https://restcountries.com/v3.1/name/${countryName}`);
+      const country = res.data[0];
+      const info = {
+        name: country.name.common,
+        capital: country.capital?.[0] || "N/A",
+        region: country.region,
+        population: country.population,
+        flag: country.flags?.png || "",
+        latlng: country.latlng
+      };
+      countryCache.current.set(countryName, info);
+      setHoverCountryInfo(info);
+    } catch (error) {
+      setHoverCountryInfo(null);
+    }
+  };
+
   const saveData = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -131,43 +156,31 @@ const WorldMap = () => {
         { visitedCities, visitedCountries, statistics },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      console.log("Data saved successfully!");
+      alert("Data saved successfully!");
     } catch (error) {
       console.error("Save failed:", error);
+      alert("Failed to save data. Please try again.");
     }
   };
 
+  const debouncedFetchSuggestions = useCallback(
+    debounce(async ({ value }) => {
+      const apiKey = import.meta.env.VITE_OPENCAGE_API_KEY;
+      const response = await fetch(
+        `https://api.opencagedata.com/geocode/v1/json?q=${value}&key=${apiKey}`
+      );
+      const data = await response.json();
+      const citySuggestions = data.results
+        .filter((result) => result.components._type === "city")
+        .map((result) => ({
+          name: result.formatted,
+          lat: result.geometry.lat,
+          lng: result.geometry.lng,
+        }));
+      setSuggestions(citySuggestions);
+    }, 500), [] 
+  );
   
-useEffect(() => {
-  const loadData = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/get-data', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-    } catch (error) {
-      console.error("Failed to load data:", error);
-    }
-  };
-  loadData();
-}, []);
-
-  const onSuggestionsFetchRequested = async ({ value }) => {
-    const apiKey = import.meta.env.VITE_OPENCAGE_API_KEY;
-    const response = await fetch(
-      `https://api.opencagedata.com/geocode/v1/json?q=${value}&key=${apiKey}`
-    );
-    const data = await response.json();
-    const citySuggestions = data.results
-      .filter((result) => result.components._type === "city")
-      .map((result) => ({
-        name: result.formatted,
-        lat: result.geometry.lat,
-        lng: result.geometry.lng,
-      }));
-    setSuggestions(citySuggestions);
-  };
 
   const onSuggestionsClearRequested = () => setSuggestions([]);
   const getSuggestionValue = (suggestion) => suggestion.name;
@@ -187,8 +200,7 @@ useEffect(() => {
     setLoading(true); 
     const timer = setTimeout(() => {
       setLoading(false); 
-    }, 4000);
-  
+    }, 2000);
     return () => clearTimeout(timer); 
   }, []);
 
@@ -206,7 +218,7 @@ useEffect(() => {
           <div className="input-bar">
             <Autosuggest
               suggestions={suggestions}
-              onSuggestionsFetchRequested={onSuggestionsFetchRequested}
+              onSuggestionsFetchRequested={debouncedFetchSuggestions}
               onSuggestionsClearRequested={onSuggestionsClearRequested}
               getSuggestionValue={getSuggestionValue}
               renderSuggestion={renderSuggestion}
@@ -229,7 +241,7 @@ useEffect(() => {
 
           {mode === "city" && visitedCities.map((city, index) => (
             <Marker key={index} position={[city.lat, city.lng]}>
-              <Tooltip>{city.name.split(',')[0]}</Tooltip>
+              <LeafletTooltip>{city.name.split(',')[0]}</LeafletTooltip>
             </Marker>
           ))}
 
@@ -244,9 +256,27 @@ useEffect(() => {
                 fillOpacity: 0.7,
               })}
               onEachFeature={(feature, layer) => {
-                layer.on({ click: highlightCountry });
+                layer.on({
+                  click: highlightCountry,
+                  mouseover: () => fetchCountryInfo(feature.properties.name),
+                  mouseout: () => setHoverCountryInfo(null),
+                });
               }}
             />
+          )}
+
+          {hoverCountryInfo && (
+            <Marker position={hoverCountryInfo.latlng} icon={L.divIcon({ className: 'invisible-icon' })}>
+              <LeafletTooltip direction="top" permanent>
+                <div style={{ maxWidth: "200px", textAlign: "left" }}>
+                  <strong>{hoverCountryInfo.name}</strong><br />
+                  Capital: {hoverCountryInfo.capital}<br />
+                  Region: {hoverCountryInfo.region}<br />
+                  Population: {hoverCountryInfo.population.toLocaleString()}<br />
+                  <img src={hoverCountryInfo.flag} alt="flag" width="60" />
+                </div>
+              </LeafletTooltip>
+            </Marker>
           )}
         </MapContainer>
 
