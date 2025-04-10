@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./Register.css";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 function Register() {
   const [formData, setFormData] = useState({ username: "", email: "", password: "" });
@@ -17,7 +20,7 @@ function Register() {
       navigate("/login"); 
     } catch (err) {
       console.error("Registration failed:", err.response?.data);
-      alert(err.response?.data.message || "Registration failed");
+      toast.error(err.response?.data.message || "Registration failed");
     }
   };
 
@@ -122,7 +125,7 @@ function Register() {
 
     return (
       <div>
-        
+        <ToastContainer autoClose={3000} hideProgressBar={false} closeOnClick pauseOnFocusLoss draggable pauseOnHover />
         <div className="gradient-background">
           <div className="gradient-sphere sphere-1"></div>
           <div className="gradient-sphere sphere-2"></div>
@@ -158,7 +161,7 @@ function Register() {
             value={formData.password}
             onChange={handleChange}
           />
-          <button type="submit" className="btn" onClick={()=> alert("Registration successful! Please log in.")}>Register</button>
+          <button type="submit" className="btn" onClick={()=> toast.success("Registration successful! Please log in.")}>Register</button>
           <a className="login-link" onClick={() => navigate("/login")}>Already have an account? Login</a>
         </form>
         </div>

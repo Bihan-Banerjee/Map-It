@@ -8,6 +8,9 @@ import "./WorldMap.css";
 import axios from "axios";
 import Loader from "./Loader";
 import { debounce } from 'lodash';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 
 const WorldMap = () => {
@@ -95,7 +98,7 @@ const WorldMap = () => {
       throw new Error("City not found");
     } catch (error) {
       console.error("Error fetching coordinates:", error);
-      alert("Failed to find city. Please try another name.");
+      toast.warn("Failed to find city. Please try another name.", { position: "top-right" });
       return null;
     }
   };
@@ -126,28 +129,30 @@ const WorldMap = () => {
     }
   };
 
-  const fetchCountryInfo = async (countryName) => {
-    if (countryCache.current.has(countryName)) {
-      setHoverCountryInfo(countryCache.current.get(countryName));
-      return;
-    }
-    try {
-      const res = await axios.get(`https://restcountries.com/v3.1/name/${countryName}`);
-      const country = res.data[0];
-      const info = {
-        name: country.name.common,
-        capital: country.capital?.[0] || "N/A",
-        region: country.region,
-        population: country.population,
-        flag: country.flags?.png || "",
-        latlng: country.latlng
-      };
-      countryCache.current.set(countryName, info);
-      setHoverCountryInfo(info);
-    } catch (error) {
-      setHoverCountryInfo(null);
-    }
-  };
+  const debouncedFetchCountryInfo = useCallback(
+    debounce(async (countryName) => {
+      if (countryCache.current.has(countryName)) {
+        setHoverCountryInfo(countryCache.current.get(countryName));
+        return;
+      }
+      try {
+        const res = await axios.get(`https://restcountries.com/v3.1/name/${countryName}`);
+        const country = res.data[0];
+        const info = {
+          name: country.name.common,
+          capital: country.capital?.[0] || "N/A",
+          region: country.region,
+          population: country.population,
+          flag: country.flags?.png || "",
+          latlng: country.latlng,
+        };
+        countryCache.current.set(countryName, info);
+        setHoverCountryInfo(info);
+      } catch (error) {
+        setHoverCountryInfo(null);
+      }
+    }, 500), [] 
+  );
 
   const saveData = async () => {
     try {
@@ -156,10 +161,9 @@ const WorldMap = () => {
         { visitedCities, visitedCountries, statistics },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      alert("Data saved successfully!");
+      toast.success("Data saved successfully!", { position: "top-right" });
     } catch (error) {
-      console.error("Save failed:", error);
-      alert("Failed to save data. Please try again.");
+      toast.error("Failed to save data. Please try again.", { position: "top-right" });
     }
   };
 
@@ -206,6 +210,7 @@ const WorldMap = () => {
 
   return (
     <div>
+      <ToastContainer autoClose={3000} hideProgressBar={false} closeOnClick pauseOnFocusLoss draggable pauseOnHover />
       {loading && <Loader state={loading} />}
       {!loading && (
       <div className="container">
@@ -258,7 +263,7 @@ const WorldMap = () => {
               onEachFeature={(feature, layer) => {
                 layer.on({
                   click: highlightCountry,
-                  mouseover: () => fetchCountryInfo(feature.properties.name),
+                  mouseover: () => debouncedFetchCountryInfo(feature.properties.name),
                   mouseout: () => setHoverCountryInfo(null),
                 });
               }}

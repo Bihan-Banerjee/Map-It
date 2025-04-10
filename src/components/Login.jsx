@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function Login() {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -15,11 +17,11 @@ function Login() {
     try {
       const res = await axios.post("http://localhost:5000/api/auth/login", formData);
       localStorage.setItem("token", res.data.token);
-      alert("Login successful!");
+      toast.success("Login successful!");
       navigate("/world-map");
     } catch (err) {
       console.error("Login failed:", err.response?.data);
-      alert(err.response?.data.message || "Login failed");
+      toast.error(err.response?.data.message || "Login failed");
     }
   };
 
@@ -123,7 +125,7 @@ function Login() {
 
   return (
     <div>
-      
+      <ToastContainer autoClose={3000} hideProgressBar={false} closeOnClick pauseOnFocusLoss draggable pauseOnHover />
       <div className="gradient-background">
         <div className="gradient-sphere sphere-1"></div>
         <div className="gradient-sphere sphere-2"></div>
