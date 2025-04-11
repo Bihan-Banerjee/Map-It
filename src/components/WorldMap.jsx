@@ -10,9 +10,6 @@ import Loader from "./Loader";
 import { debounce } from 'lodash';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
-
-
 const WorldMap = () => {
   const [mode, setMode] = useState("city"); 
   const [visitedCities, setVisitedCities] = useState([]);
