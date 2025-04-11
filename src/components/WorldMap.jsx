@@ -10,6 +10,7 @@ import Loader from "./Loader";
 import { debounce } from 'lodash';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import LogoutButton from "./LogoutButton";
 const WorldMap = () => {
   const [mode, setMode] = useState("city"); 
   const [visitedCities, setVisitedCities] = useState([]);
@@ -211,25 +212,29 @@ const WorldMap = () => {
       {loading && <Loader state={loading} />}
       {!loading && (
       <div className="container">
-        <span className="welcome">Welcome, {userName}</span>
-        <button className="ui-btn header" onClick={() => setMode(mode === "city" ? "country" : "city")}>
-          <span>Switch to {mode === "city" ? "Country Mode" : "City Mode"}</span>
-        </button>
+        <div className="header-container">
+          <span className="welcome">Welcome, {userName}</span>
+          <LogoutButton/>
 
-        {mode === "city" && (
-          <div className="input-bar">
-            <Autosuggest
-              suggestions={suggestions}
-              onSuggestionsFetchRequested={debouncedFetchSuggestions}
-              onSuggestionsClearRequested={onSuggestionsClearRequested}
-              getSuggestionValue={getSuggestionValue}
-              renderSuggestion={renderSuggestion}
-              onSuggestionSelected={onSuggestionSelected}
-              inputProps={inputProps}
-            />
-            <button className="ui-btn search_button" onClick={handleCityAdd}><span>Add City</span></button>
-          </div>
-        )}
+          <button className="ui-btn header" onClick={() => setMode(mode === "city" ? "country" : "city")}>
+            <span>Switch to {mode === "city" ? "Country Mode" : "City Mode"}</span>
+          </button>
+
+          {mode === "city" && (
+            <div className="input-bar">
+              <Autosuggest
+                suggestions={suggestions}
+                onSuggestionsFetchRequested={debouncedFetchSuggestions}
+                onSuggestionsClearRequested={onSuggestionsClearRequested}
+                getSuggestionValue={getSuggestionValue}
+                renderSuggestion={renderSuggestion}
+                onSuggestionSelected={onSuggestionSelected}
+                inputProps={inputProps}
+              />
+              <button className="ui-btn search_button" onClick={handleCityAdd}><span>Add City</span></button>
+            </div>
+          )}
+        </div>
 
         <MapContainer
           center={[20, 0]}

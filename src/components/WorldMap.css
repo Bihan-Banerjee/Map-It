@@ -5,17 +5,12 @@
   flex-direction: column;
 }
 
-.header {
-  padding: 10px;
-  background: #003c8b;
-  color: white;
-  display: flex;
-  justify-content: space-between;
-}
+
 
 .input-bar{
   display: flex;
   justify-content: center;
+  align-items: center;
   margin: 10px 0;
 }
 
@@ -62,6 +57,8 @@
   background: rgba(0, 0, 0, 0.5); 
   padding: 10px;
   border-radius: 5px;
+  left: 36%;
+  position: fixed;
 }
 
 
@@ -80,6 +77,7 @@
   color: white;
   border: none;
   border-radius: 5px;
+  cursor: pointer;
 }
 
 .ui-btn {
@@ -98,33 +96,13 @@
   --font-family: Menlo,Roboto Mono,monospace;
   height: 35px;
   outline: none;
+  top: 0;
+  margin-top: 0;
+  padding-top: 0;
 }
 
 
-.header{
-  box-sizing: border-box;
-  padding: var(--btn-padding);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--default-btn-color);
-  font: var(--font-weight) var(--font-size) var(--font-family);
-  background: var(--btn-default-bg);
-  border: none;
-  cursor: pointer;
-  transition: var(--btn-transition);
-  overflow: hidden;
-  box-shadow: var(--btn-shadow);
-  outline: none;
-  width: 20%;
-  z-index: 1000;
-  position:absolute;
-  left: 79%;
-  border-radius: 5px;
-  margin-top: 0.5%;
-  display: inline-block;
-  border-radius: 10px;
-}
+
 .ui-btn span {
   letter-spacing: var(--btn-letter-spacing);
   transition: var(--btn-transition);
@@ -262,10 +240,7 @@
   margin-bottom:  0;
 }
 
-.header{
-  margin-top: 1.5%;
-  padding:0;
-}
+
 
 .header:hover{
   background: #000000;
@@ -304,9 +279,9 @@
 .welcome{
   font-size: larger;
   padding: 0;
-  top:25px;
+  top:20px;
   left:35px;
-  position: absolute;
+  position: fixed;
   font-style: bold;
   color: #FAC921;
   font-family: 'Courier New', Courier, monospace;
@@ -320,4 +295,41 @@
   transform-origin: center;
   background: #000000;
   border: #FAC921 1px solid;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #000;
+  color: white;
+  padding: 10px 20px;
+  position: relative;
+  z-index: 1000;
+}
+
+.header{
+  padding: 10px;
+  display: flex;
+  box-sizing: border-box;
+  padding: var(--btn-padding);
+  align-items: center;
+  justify-content: center;
+  color: var(--default-btn-color);
+  font: var(--font-weight) var(--font-size) var(--font-family);
+  background: var(--btn-default-bg);
+  border: none;
+  cursor: pointer;
+  transition: var(--btn-transition);
+  overflow: hidden;
+  box-shadow: var(--btn-shadow);
+  outline: none;
+  width: 20%;
+  z-index: 1000;
+  position:fixed;
+  left: 79%;
+  display: inline-block;
+  border-radius: 10px;
+  margin-top: 1.5%;
+  padding:0;
 }
