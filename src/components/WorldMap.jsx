@@ -102,7 +102,20 @@ const WorldMap = () => {
   };
 
   const handleCityAdd = async () => {
-    if (!cityInput.trim()) return;
+    if (!cityInput.trim()) {
+      toast.warn("City name cannot be empty.", { position: "top-right" });
+      return;
+    }
+  
+    const isDuplicate = visitedCities.some(
+      (city) => city.name.toLowerCase() === cityInput.trim().toLowerCase()
+    );
+  
+    if (isDuplicate) {
+      toast.warn("City is already in the list.", { position: "top-right" });
+      return;
+    }
+  
     const coordinates = await getCityCoordinates(cityInput);
     if (coordinates) {
       const newCity = {
@@ -186,7 +199,14 @@ const WorldMap = () => {
 
   const onSuggestionsClearRequested = () => setSuggestions([]);
   const getSuggestionValue = (suggestion) => suggestion.name;
-  const renderSuggestion = (suggestion) => <div>{suggestion.name}</div>;
+  const renderSuggestion = (suggestion) => (
+    <div style={{ display: "flex", alignItems: "center", padding: "5px" }}>
+      <div style={{ marginRight: "10px", fontWeight: "bold" }}>{suggestion.name}</div>
+      <div style={{ fontSize: "12px", color: "gray" }}>
+        ({suggestion.lat.toFixed(2)}, {suggestion.lng.toFixed(2)})
+      </div>
+    </div>
+  );
   const onSuggestionSelected = (_, { suggestion }) => setCityInput(suggestion.name);
 
   const inputProps = {
@@ -230,6 +250,12 @@ const WorldMap = () => {
                 renderSuggestion={renderSuggestion}
                 onSuggestionSelected={onSuggestionSelected}
                 inputProps={inputProps}
+                theme={{
+                  container: "autosuggest-container",
+                  suggestionsContainer: "autosuggest-suggestions-container",
+                  suggestionsList: "autosuggest-suggestions-list",
+                  suggestion: "autosuggest-suggestion",
+                }}
               />
               <button className="ui-btn search_button" onClick={handleCityAdd}><span>Add City</span></button>
             </div>

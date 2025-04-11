@@ -71,6 +71,15 @@
   border-radius: 5px;
 }
 
+.input-bar input::placeholder {
+  font-size: 14px;
+}
+
+.input-bar input:hover, .input-bar input:focus {
+  border:1px solid #000;
+  background: rgba(255, 255, 255, 1); 
+}
+
 .input-bar button {
   padding: 10px;
   background: #FAC921;
@@ -252,8 +261,8 @@
   transform-origin: center;
 }
 
-.stat{
-  margin-top: 0;
+.stat span{
+  top:20%;
 }
 
 .stat:hover{
@@ -332,4 +341,38 @@
   border-radius: 10px;
   margin-top: 1.5%;
   padding:0;
+}
+
+.autosuggest-container {
+  position: relative;
+  color: #000;
+}
+
+.autosuggest-suggestions-container {
+  position: absolute;
+  top: 100%; 
+  left: 0;
+  width: 100%;
+  background-color: white;
+  border: 1px solid #000000;
+  z-index: 10;
+  max-height: 200px; 
+  overflow-y: auto; 
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.autosuggest-suggestions-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #000;
+}
+
+.autosuggest-suggestion {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.autosuggest-suggestion:hover {
+  background-color: #c8c6c6;
 }
