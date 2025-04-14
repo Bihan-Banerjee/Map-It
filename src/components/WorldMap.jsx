@@ -11,6 +11,7 @@ import { debounce } from 'lodash';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import LogoutButton from "./LogoutButton";
+import { FaRobot } from "react-icons/fa";
 const WorldMap = () => {
   const [mode, setMode] = useState("city"); 
   const [visitedCities, setVisitedCities] = useState([]);
@@ -25,6 +26,23 @@ const WorldMap = () => {
   const [userName, setUserName] = useState("");
   const [hoverCountryInfo, setHoverCountryInfo] = useState(null);
   const countryCache = useRef(new Map());
+  const [robotResponse, setRobotResponse] = useState("");
+  const [showResponse, setShowResponse] = useState(false);
+
+
+  const handleRobotClick = async () => {
+    const prompt = `Here's a list of countries I've visited: ${visitedCountries.join(", ")}. And these are the cities I've been to: ${visitedCities.join(", ")}. Can you generate a fun quirky message or fact about my travel adventures?`;
+  
+    try {
+      const response = await axios.post("http://localhost:5000/api/gemini/analyze", { prompt });
+      console.log("Robot response:", response.data.message);
+      setRobotResponse(response.data.message);
+    } catch (error) {
+      console.error("Error fetching robot response:", error);
+      setRobotResponse("Failed to get a response from the robot.");
+    }
+  };
+  
 
   useEffect(() => {
     const fetchUserName = async () => {
@@ -324,6 +342,60 @@ const WorldMap = () => {
           <button className="ui-btn stat" onClick={saveData}><span>Save Data</span></button>
         </div>
       </div>
+      )}
+      <div
+        className="robot-icon"
+        onClick={handleRobotClick}
+        style={{
+          position: "fixed",
+          bottom: "20px",
+          right: "20px",
+          backgroundColor: "#007bff",
+          color: "white",
+          borderRadius: "50%",
+          width: "60px",
+          height: "60px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          cursor: "pointer",
+          boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <FaRobot size={30} />
+      </div>
+
+      {showResponse && (
+        <div
+          className="robot-response"
+          style={{
+            position: "fixed",
+            bottom: "100px",
+            right: "20px",
+            backgroundColor: "white",
+            border: "1px solid #ccc",
+            borderRadius: "10px",
+            padding: "10px",
+            boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+            maxWidth: "300px",
+          }}
+        >
+          <p>{robotResponse}</p>
+          <button
+            onClick={() => setShowResponse(false)}
+            style={{
+              backgroundColor: "#007bff",
+              color: "white",
+              border: "none",
+              borderRadius: "5px",
+              padding: "5px 10px",
+              cursor: "pointer",
+              marginTop: "10px",
+            }}
+          >
+            Close
+          </button>
+        </div>
       )}
     </div>
   );
