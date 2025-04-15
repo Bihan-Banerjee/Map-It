@@ -81,6 +81,7 @@ const StyledWrapper = styled.div`
     height: 100vh; 
     width: 100vw;  
     background: #0a0a0a; 
+    z-index: 999999;
 
   .pl {
     display: block;

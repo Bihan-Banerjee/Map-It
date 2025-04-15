@@ -28,21 +28,32 @@ const WorldMap = () => {
   const countryCache = useRef(new Map());
   const [robotResponse, setRobotResponse] = useState("");
   const [showResponse, setShowResponse] = useState(false);
+  const [showBubble, setShowBubble] = useState(false);
+
 
 
   const handleRobotClick = async () => {
-    const prompt = `Here's a list of countries I've visited: ${visitedCountries.join(", ")}. And these are the cities I've been to: ${visitedCities.join(", ")}. Can you generate a fun quirky message or fact about my travel adventures?`;
-  
     try {
-      const response = await axios.post("http://localhost:5000/api/gemini/analyze", { prompt });
-      console.log("Robot response:", response.data.message);
+      const cleanList = (list) => [...list].filter(Boolean).map(c => typeof c === 'string' ? c : (c.name || JSON.stringify(c)));
+      const cleanCountries = cleanList(visitedCountries);
+      const cleanCities = cleanList(visitedCities);
+      
+      const prompt = `The user has visited the following countries: ${cleanCountries.join(", ")} and cities: ${cleanCities.join(", ")}. Compose a brief travel summary (within 50-75 words) in a light, mildly formal, and engaging tone — like a note from a seasoned travel writer. Avoid asking the user any questions. You may reference famous landmarks, local dishes, or cultural moments from these places. Use only English text, but localized words in English (like 'gelato' or 'siesta') are allowed. No font changes or non-English scripts. You can add tasteful emojis to enhance warmth. End with a charming remark if fitting.`;
+  
+      const response = await axios.post('http://localhost:5000/api/gemini/analyze', { prompt });
+  
+      console.log("Gemini says:", response.data.message);
       setRobotResponse(response.data.message);
+      setShowBubble(true);
+  
+      setTimeout(() => {
+        setShowBubble(false);
+      }, 30000);
+  
     } catch (error) {
       console.error("Error fetching robot response:", error);
-      setRobotResponse("Failed to get a response from the robot.");
     }
   };
-  
 
   useEffect(() => {
     const fetchUserName = async () => {
@@ -360,43 +371,63 @@ const WorldMap = () => {
           alignItems: "center",
           cursor: "pointer",
           boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+          zIndex: 1000
         }}
       >
         <FaRobot size={30} />
       </div>
 
-      {showResponse && (
-        <div
-          className="robot-response"
-          style={{
-            position: "fixed",
-            bottom: "100px",
-            right: "20px",
-            backgroundColor: "white",
-            border: "1px solid #ccc",
-            borderRadius: "10px",
-            padding: "10px",
-            boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-            maxWidth: "300px",
-          }}
-        >
-          <p>{robotResponse}</p>
-          <button
-            onClick={() => setShowResponse(false)}
-            style={{
-              backgroundColor: "#007bff",
-              color: "white",
-              border: "none",
-              borderRadius: "5px",
-              padding: "5px 10px",
-              cursor: "pointer",
-              marginTop: "10px",
-            }}
-          >
-            Close
-          </button>
+      {showBubble && (
+        <div style={{
+          position: 'fixed',
+          bottom: '100px',
+          right: '30px',
+          backgroundColor: '#fff',
+          padding: '12px 16px',
+          borderRadius: '12px',
+          boxShadow: '0 2px 12px rgba(0,0,0,0.25)',
+          maxWidth: '260px',
+          zIndex: 9999,
+          fontSize: '14px',
+          color: '#000',
+          lineHeight: '1.4',
+        }}>
+          {robotResponse}
+          <div style={{
+            position: 'absolute',
+            bottom: '-12px',
+            right: '20px',
+            width: '0',
+            height: '0',
+            borderLeft: '10px solid transparent',
+            borderRight: '10px solid transparent',
+            borderTop: '12px solid #fff',
+            color: '#000',
+          }}></div>
         </div>
       )}
+  
+      <button 
+        onClick={handleRobotClick}
+        style={{
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          zIndex: 9999,
+          backgroundColor: '#ffcc00',
+          border: 'none',
+          color: '#000',
+          opacity: 0.000001,
+          borderRadius: '50%',
+          width: '60px',
+          height: '60px',
+          cursor: 'pointer',
+          fontSize: '30px',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.3)'
+        }}
+      >
+        🤖
+      </button>
     </div>
   );
 };
