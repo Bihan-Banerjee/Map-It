@@ -390,15 +390,17 @@
   justify-content: center;
   align-items: center;
   cursor: pointer;
+  z-index: 1000;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .robot-icon:hover {
   background-color: #0056b3;
-  transform: scale(1.5);
-  transition: background-color 0.3s ease, transform 0.3s ease;
-  box-shadow: 0px 6px 8px rgba(33, 50, 243, 0.2);
+  transform: scale(1.2);
+  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
 }
+
 
 .robot-response {
   position: fixed;

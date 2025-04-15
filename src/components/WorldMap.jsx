@@ -29,19 +29,37 @@ const WorldMap = () => {
   const [robotResponse, setRobotResponse] = useState("");
   const [showResponse, setShowResponse] = useState(false);
   const [showBubble, setShowBubble] = useState(false);
+  const bubbleRef = useRef(null);
+  const [aiLoading, setAiLoading] = useState(false);
 
 
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (bubbleRef.current && !bubbleRef.current.contains(event.target)) {
+        setShowBubble(false);
+      }
+    }
+  
+    if (showBubble) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+  
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showBubble]);
+  
 
   const handleRobotClick = async () => {
     try {
+      setAiLoading(true);
       const cleanList = (list) => [...list].filter(Boolean).map(c => typeof c === 'string' ? c : (c.name || JSON.stringify(c)));
       const cleanCountries = cleanList(visitedCountries);
       const cleanCities = cleanList(visitedCities);
-      
       const prompt = `The user has visited the following countries: ${cleanCountries.join(", ")} and cities: ${cleanCities.join(", ")}. Compose a brief travel summary (within 50-75 words) in a light, mildly formal, and engaging tone — like a note from a seasoned travel writer. Avoid asking the user any questions. You may reference famous landmarks, local dishes, or cultural moments from these places. Use only English text, but localized words in English (like 'gelato' or 'siesta') are allowed. No font changes or non-English scripts. You can add tasteful emojis to enhance warmth. End with a charming remark if fitting.`;
-  
       const response = await axios.post('http://localhost:5000/api/gemini/analyze', { prompt });
-  
       console.log("Gemini says:", response.data.message);
       setRobotResponse(response.data.message);
       setShowBubble(true);
@@ -52,6 +70,8 @@ const WorldMap = () => {
   
     } catch (error) {
       console.error("Error fetching robot response:", error);
+    } finally {
+      setAiLoading(false);
     }
   };
 
@@ -354,31 +374,38 @@ const WorldMap = () => {
         </div>
       </div>
       )}
-      <div
-        className="robot-icon"
-        onClick={handleRobotClick}
-        style={{
-          position: "fixed",
-          bottom: "20px",
-          right: "20px",
-          backgroundColor: "#007bff",
-          color: "white",
-          borderRadius: "50%",
-          width: "60px",
-          height: "60px",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          cursor: "pointer",
-          boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-          zIndex: 1000
-        }}
-      >
-        <FaRobot size={30} />
-      </div>
+      {!loading && (
+        <div
+          className="robot-icon"
+          onClick={handleRobotClick}
+        >
+          <FaRobot size={30} />
+        </div>
+      )}
 
-      {showBubble && (
+      {aiLoading && (
         <div style={{
+          position: 'fixed',
+          bottom: '100px',
+          right: '30px',
+          backgroundColor: '#fff',
+          padding: '12px 16px',
+          borderRadius: '12px',
+          boxShadow: '0 2px 12px rgba(0,0,0,0.25)',
+          zIndex: 9999,
+          fontSize: '14px',
+          color: '#000',
+          lineHeight: '1.4'
+        }}>
+          Generating AI response... 🤖✨
+        </div>
+      )}
+
+
+      {showBubble && !aiLoading && (
+        <div 
+          ref={bubbleRef}
+          style={{
           position: 'fixed',
           bottom: '100px',
           right: '30px',
@@ -406,28 +433,6 @@ const WorldMap = () => {
           }}></div>
         </div>
       )}
-  
-      <button 
-        onClick={handleRobotClick}
-        style={{
-          position: 'fixed',
-          bottom: '20px',
-          right: '20px',
-          zIndex: 9999,
-          backgroundColor: '#ffcc00',
-          border: 'none',
-          color: '#000',
-          opacity: 0.000001,
-          borderRadius: '50%',
-          width: '60px',
-          height: '60px',
-          cursor: 'pointer',
-          fontSize: '30px',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.3)'
-        }}
-      >
-        🤖
-      </button>
     </div>
   );
 };
