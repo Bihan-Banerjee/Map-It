@@ -12,6 +12,10 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import LogoutButton from "./LogoutButton";
 import { FaRobot } from "react-icons/fa";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import DownloadButton from "./DownloadButton";
+
 const WorldMap = () => {
   const [mode, setMode] = useState("city"); 
   const [visitedCities, setVisitedCities] = useState([]);
@@ -150,6 +154,39 @@ const WorldMap = () => {
     }
   };
 
+  const generateCertificate = async () => {
+    console.log("Download button clicked!");
+    try {
+      const cleanList = (list) => [...list].filter(Boolean).map(c => typeof c === 'string' ? c : (c.name || JSON.stringify(c)));
+      const cleanCountries = cleanList(visitedCountries);
+      const cleanCities = cleanList(visitedCities);
+  
+      const prompt = `The user has visited the following countries: ${cleanCountries.join(", ")} and cities: ${cleanCities.join(", ")}. Create a concise (80-100 words), light, formal yet friendly analysis of their travel history, suggesting potential future travel destinations and analyze past travel trends. Avoid questions, use English text only with localized words allowed. Close with a charming remark.`;
+  
+      const response = await axios.post('http://localhost:5000/api/gemini/analyze', { prompt });
+      const aiMessage = response.data.message;
+      const doc = new jsPDF();
+      doc.setFontSize(18);
+      doc.text("🌍 MapIt Travel Certificate", 20, 20);
+      
+      doc.setFontSize(12);
+      doc.text(`Name: ${userName}`, 20, 35);
+      doc.text(`Countries Visited: ${statistics.numCountriesVisited}`, 20, 45);
+      doc.text(`Cities Visited: ${statistics.numCitiesVisited}`, 20, 55);
+      doc.text(`World Explored: ${statistics.percentageWorldExplored.toFixed(2)}%`, 20, 65);
+  
+      doc.setFontSize(14);
+      doc.text("AI Travel Summary:", 20, 80);
+      doc.setFontSize(11);
+      doc.text(doc.splitTextToSize(aiMessage, 170), 20, 90);
+  
+      doc.save("MapIt_Certificate.pdf");
+    } catch (error) {
+      toast.error("Failed to generate certificate.");
+      console.error("PDF error:", error);
+    }
+  };
+
   const handleCityAdd = async () => {
     if (!cityInput.trim()) {
       toast.warn("City name cannot be empty.", { position: "top-right" });
@@ -284,7 +321,7 @@ const WorldMap = () => {
         <div className="header-container">
           <span className="welcome">Welcome, {userName}</span>
           <LogoutButton/>
-
+          <DownloadButton onClick={generateCertificate}/>
           <button className="ui-btn header" onClick={() => setMode(mode === "city" ? "country" : "city")}>
             <span>Switch to {mode === "city" ? "Country Mode" : "City Mode"}</span>
           </button>
@@ -361,7 +398,7 @@ const WorldMap = () => {
             </Marker>
           )}
         </MapContainer>
-
+          
         <div className="statistics" style={{ top: mode === "city" ? "80vh" : "71vh" }}>
           {mode === "city" && <p>Cities Visited: {statistics.numCitiesVisited}</p>}
           {mode === "country" && (
