@@ -157,32 +157,52 @@ const WorldMap = () => {
   const generateCertificate = async () => {
     console.log("Download button clicked!");
     try {
-      const cleanList = (list) => [...list].filter(Boolean).map(c => typeof c === 'string' ? c : (c.name || JSON.stringify(c)));
+      const cleanList = (list) =>
+        [...list].filter(Boolean).map((c) =>
+          typeof c === "string" ? c : c.name || JSON.stringify(c)
+        );
       const cleanCountries = cleanList(visitedCountries);
       const cleanCities = cleanList(visitedCities);
   
       const prompt = `The user has visited the following countries: ${cleanCountries.join(", ")} and cities: ${cleanCities.join(", ")}. Create a concise (80-100 words), light, formal yet friendly analysis of their travel history, suggesting potential future travel destinations and analyze past travel trends. Avoid questions, use English text only with localized words allowed. Close with a charming remark.`;
   
-      const response = await axios.post('http://localhost:5000/api/gemini/analyze', { prompt });
+      const response = await axios.post("http://localhost:5000/api/gemini/analyze", { prompt });
       const aiMessage = response.data.message;
+  
       const doc = new jsPDF();
-      doc.setFontSize(18);
-      doc.text("🌍 MapIt Travel Certificate", 20, 20);
-      
-      doc.setFontSize(12);
-      doc.text(`Name: ${userName}`, 20, 35);
-      doc.text(`Countries Visited: ${statistics.numCountriesVisited}`, 20, 45);
-      doc.text(`Cities Visited: ${statistics.numCitiesVisited}`, 20, 55);
-      doc.text(`World Explored: ${statistics.percentageWorldExplored.toFixed(2)}%`, 20, 65);
-  
-      doc.setFontSize(14);
-      doc.text("AI Travel Summary:", 20, 80);
-      doc.setFontSize(11);
-      doc.text(doc.splitTextToSize(aiMessage, 170), 20, 90);
-  
-      doc.save("MapIt_Certificate.pdf");
+      const img = new Image();
+      img.src = "../public/logo.png"; 
+      img.onload = () => {
+        doc.setFillColor(250, 201, 33); 
+        doc.rect(0, 0, 210, 25, "F"); 
+        doc.setFontSize(20);
+        doc.setTextColor(0, 0, 0);
+        doc.setFont("helvetica", "bold");
+        doc.text("MapIt Travel Certificate", 105, 16, null, null, "center");
+        doc.setDrawColor(60, 60, 60);
+        doc.setLineWidth(1);
+        doc.rect(10, 30, 190, 240);
+        doc.addImage(img, "PNG", 30, 80, 150, 150, undefined, "FAST");
+        doc.setFontSize(14);
+        doc.setTextColor(0, 0, 0);
+        doc.setFont("helvetica", "bold");
+        doc.text(`Name: ${userName}`, 20, 45);
+        doc.text(`Countries Visited: ${statistics.numCountriesVisited}`, 20, 55);
+        doc.text(`Cities Visited: ${statistics.numCitiesVisited}`, 20, 65);
+        doc.text(`World Explored: ${statistics.percentageWorldExplored.toFixed(2)}%`, 20, 75);
+        doc.setLineWidth(0.5);
+        doc.line(20, 82, 190, 82);
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "normal");
+        doc.text("AI Travel Summary:", 20, 90);
+        doc.setFontSize(11);
+        const splitSummary = doc.splitTextToSize(aiMessage, 170);
+        doc.text(splitSummary, 20, 100);
+        doc.line(20, 270, 190, 270);  
+        doc.save("MapIt_Certificate.pdf");
+      };
     } catch (error) {
-      toast.error("Failed to generate certificate.");
+        toast.error("Failed to generate certificate.");
       console.error("PDF error:", error);
     }
   };
