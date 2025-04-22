@@ -164,48 +164,61 @@ const WorldMap = () => {
       const cleanCountries = cleanList(visitedCountries);
       const cleanCities = cleanList(visitedCities);
   
-      const prompt = `The user has visited the following countries: ${cleanCountries.join(", ")} and cities: ${cleanCities.join(", ")}. Create a concise (80-100 words), light, formal yet friendly analysis of their travel history, suggesting potential future travel destinations and analyze past travel trends. Avoid questions, use English text only with localized words allowed. Close with a charming remark.`;
+      const prompt = `The user has visited the following countries: ${cleanCountries.join(", ")} and cities: ${cleanCities.join(", ")}. Write a clear, formal, friendly (no emojis) travel analysis (200-250 words) summarizing their travel history, suggesting future destinations, and describing travel trends. Organize the response under titled sections: 'Travel Highlights', 'Potential Future Destinations', and 'Overall Insights'. Do not write subheadings like **Subheading** and use a colon instead. Avoid redundant phrasing like "(listed redundantly with 'City, Country')". Be concise, clean, and elegant in tone.`;
   
       const response = await axios.post("http://localhost:5000/api/gemini/analyze", { prompt });
       const aiMessage = response.data.message;
   
       const doc = new jsPDF();
+      doc.setFillColor(250, 201, 33);
+      doc.rect(0, 0, 210, 25, "F");
+      doc.setFontSize(20);
+      doc.setTextColor(0, 0, 0);
+      doc.setFont("helvetica", "bold");
+      doc.text("MapIt Travel Certificate", 105, 16, null, null, "center");
+      doc.setDrawColor(60, 60, 60);
+      doc.setLineWidth(1);
+      doc.rect(10, 30, 190, 260);
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("Traveller Profile", 105, 45, { align: "center" });
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Name: ${userName}`, 105, 55, { align: "center" });
+      doc.text(`Countries Visited: ${statistics.numCountriesVisited}`, 105, 65, { align: "center" });
+      doc.text(`Cities Visited: ${statistics.numCitiesVisited}`, 105, 75, { align: "center" });
+      doc.text(`World Explored: ${statistics.percentageWorldExplored.toFixed(2)}%`, 105,85, { align: "center" });
+      doc.setLineWidth(0.5);
+      doc.line(20, 97, 190, 97);
+      doc.setFontSize(13);
+      doc.setFont("helvetica", "bold");
+      doc.text("AI-Powered Travel Analysis", 20, 105);
+  
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "normal");
+      const splitSummary = doc.splitTextToSize(aiMessage, 170);
+      doc.text(splitSummary, 20, 115);
       const img = new Image();
-      img.src = "../public/logo.png"; 
+      img.src = "../public/watermark.png";
       img.onload = () => {
-        doc.setFillColor(250, 201, 33); 
-        doc.rect(0, 0, 210, 25, "F"); 
-        doc.setFontSize(20);
-        doc.setTextColor(0, 0, 0);
-        doc.setFont("helvetica", "bold");
-        doc.text("MapIt Travel Certificate", 105, 16, null, null, "center");
-        doc.setDrawColor(60, 60, 60);
-        doc.setLineWidth(1);
-        doc.rect(10, 30, 190, 240);
-        doc.addImage(img, "PNG", 30, 80, 150, 150, undefined, "FAST");
-        doc.setFontSize(14);
-        doc.setTextColor(0, 0, 0);
-        doc.setFont("helvetica", "bold");
-        doc.text(`Name: ${userName}`, 20, 45);
-        doc.text(`Countries Visited: ${statistics.numCountriesVisited}`, 20, 55);
-        doc.text(`Cities Visited: ${statistics.numCitiesVisited}`, 20, 65);
-        doc.text(`World Explored: ${statistics.percentageWorldExplored.toFixed(2)}%`, 20, 75);
-        doc.setLineWidth(0.5);
-        doc.line(20, 82, 190, 82);
-        doc.setFontSize(12);
-        doc.setFont("helvetica", "normal");
-        doc.text("AI Travel Summary:", 20, 90);
-        doc.setFontSize(11);
-        const splitSummary = doc.splitTextToSize(aiMessage, 170);
-        doc.text(splitSummary, 20, 100);
-        doc.line(20, 270, 190, 270);  
+        const imgHeight = 75;
+        const imgWidth = 190;
+        const marginLeft = 10;
+        const rectTop = 30;
+        const rectHeight = 240;
+        const imageY = rectTop + rectHeight - imgHeight + 30;
+  
+        doc.addImage(img, "PNG", marginLeft, imageY, imgWidth, imgHeight);
         doc.save("MapIt_Certificate.pdf");
       };
+  
     } catch (error) {
-        toast.error("Failed to generate certificate.");
+      toast.error("Failed to generate certificate.");
       console.error("PDF error:", error);
     }
   };
+  
+  
 
   const handleCityAdd = async () => {
     if (!cityInput.trim()) {
