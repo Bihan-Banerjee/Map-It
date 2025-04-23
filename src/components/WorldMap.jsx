@@ -80,6 +80,13 @@ const WorldMap = () => {
   };
 
   useEffect(() => {
+    if (mode === "city") {
+      setHoverCountryInfo(null);
+    }
+  }, [mode]);
+  
+
+  useEffect(() => {
     const fetchUserName = async () => {
       try {
         const token = localStorage.getItem("token");
@@ -178,16 +185,10 @@ const WorldMap = () => {
       const headerImg = await loadImage("../public/header.png");
   
       const doc = new jsPDF();
-  
-      // Header image without any title text
       doc.addImage(headerImg, "PNG", 0, 0, 210, 25);
-  
-      // Main border
       doc.setDrawColor(60, 60, 60);
       doc.setLineWidth(1);
       doc.rect(10, 30, 190, 260);
-  
-      // Traveller Info
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
       doc.text("Traveller Certificate", 105, 45, { align: "center" });
@@ -197,8 +198,6 @@ const WorldMap = () => {
       doc.text(`Countries Visited: ${statistics.numCountriesVisited}`, 105, 65, { align: "center" });
       doc.text(`Cities Visited: ${statistics.numCitiesVisited}`, 105, 75, { align: "center" });
       doc.text(`World Explored: ${statistics.percentageWorldExplored.toFixed(2)}%`, 105, 85, { align: "center" });
-  
-      // Section line
       doc.setLineWidth(0.5);
       doc.line(20, 97, 190, 97);
   
@@ -228,9 +227,6 @@ const WorldMap = () => {
       doc.setFontSize(11);
       const splitSummary = doc.splitTextToSize(aiMessage, 170);
       renderFormattedText(doc, splitSummary, 20, 110);
-  
-      // ✅ Footer image removed as per your instruction
-  
       doc.save("MapIt_Certificate.pdf");
     } catch (error) {
       toast.error("Failed to generate certificate.");
@@ -376,7 +372,7 @@ const WorldMap = () => {
           <span className="welcome">Welcome, {userName}</span>
           <LogoutButton/>
           <DownloadButton onClick={generateCertificate}/>
-          <button className="ui-btn header" onClick={() => setMode(mode === "city" ? "country" : "city")}>
+          <button className="ui-btn header switch" onClick={() => setMode(mode === "city" ? "country" : "city")}>
             <span>Switch to {mode === "city" ? "Country Mode" : "City Mode"}</span>
           </button>
 

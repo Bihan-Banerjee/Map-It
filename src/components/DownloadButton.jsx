@@ -30,7 +30,7 @@ const StyledWrapper = styled.div`
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.11);
     z-index: 1000;
     top: 15%;
-    left: 920px;
+    left: 66%;
     margin: 0;
     padding: 0;
   }
@@ -108,6 +108,19 @@ const StyledWrapper = styled.div`
       transform: translateY(0px);
       opacity: 1;
     }
-  }`;
+  }
+    
+  
+  @media (max-width: 768px) {
+    .Btn {
+      top: 80%;
+      left: 80%;
+    }
+
+    .tooltip {
+      right: -85px;
+    }
+  }
+}`;
 
 export default DownloadButton;
