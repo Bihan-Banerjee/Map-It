@@ -32,7 +32,6 @@ const WorldMap = () => {
   const [hoverCountryInfo, setHoverCountryInfo] = useState(null);
   const countryCache = useRef(new Map());
   const [robotResponse, setRobotResponse] = useState("");
-  const [showResponse, setShowResponse] = useState(false);
   const [showBubble, setShowBubble] = useState(false);
   const bubbleRef = useRef(null);
   const [aiLoading, setAiLoading] = useState(false);
@@ -67,7 +66,6 @@ const WorldMap = () => {
       const cleanCities = cleanList(visitedCities);
       const prompt = `The user has visited the following countries: ${cleanCountries.join(", ")} and cities: ${cleanCities.join(", ")}. Compose a brief travel summary (within 50-75 words) in a light, mildly formal, and engaging tone — like a note from a seasoned travel writer. Avoid asking the user any questions. You may reference famous landmarks, local dishes, or cultural moments from these places. Use only English text, but localized words in English (like 'gelato' or 'siesta') are allowed. No font changes or non-English scripts. You can add tasteful emojis to enhance warmth. End with a charming remark if fitting.`;
       const response = await axios.post('http://localhost:5000/api/gemini/analyze', { prompt });
-      console.log("Gemini says:", response.data.message);
       setRobotResponse(response.data.message);
       setShowBubble(true);
   
@@ -76,8 +74,8 @@ const WorldMap = () => {
       }, 30000);
   
     } catch (error) {
-      console.error("Error fetching robot response:", error);
-    } finally {
+console.error("Error fetching robot response:", error);
+          } finally {
       setAiLoading(false);
     }
   };
@@ -99,8 +97,7 @@ const WorldMap = () => {
         const { username } = response.data; 
         setUserName(username || "Guest"); 
       } catch (error) {
-        console.error("Failed to fetch username:", error);
-        setUserName("Guest"); 
+                setUserName("Guest"); 
       }
     };
     fetchUserName();
@@ -158,14 +155,12 @@ const WorldMap = () => {
       }
       throw new Error("City not found");
     } catch (error) {
-      console.error("Error fetching coordinates:", error);
-      toast.warn("Failed to find city. Please try another name.", { position: "top-right" });
+            toast.warn("Failed to find city. Please try another name.", { position: "top-right" });
       return null;
     }
   };
 
   const generateCertificate = async () => {
-    console.log("Download button clicked!");
     setIsDownloading(true);
     try {
       const cleanList = (list) =>
@@ -235,8 +230,7 @@ const WorldMap = () => {
       setIsDownloading(false);
     } catch (error) {
       toast.error("Failed to generate certificate.");
-      console.error("PDF error:", error);
-      setIsDownloading(false);
+            setIsDownloading(false);
     }
   };
   
