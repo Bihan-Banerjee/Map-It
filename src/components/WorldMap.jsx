@@ -15,6 +15,7 @@ import { FaRobot } from "react-icons/fa";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import DownloadButton from "./DownloadButton";
+import AILoader from "./AILoader";
 
 const WorldMap = () => {
   const [mode, setMode] = useState("city"); 
@@ -35,6 +36,8 @@ const WorldMap = () => {
   const [showBubble, setShowBubble] = useState(false);
   const bubbleRef = useRef(null);
   const [aiLoading, setAiLoading] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+
 
 
   useEffect(() => {
@@ -163,6 +166,7 @@ const WorldMap = () => {
 
   const generateCertificate = async () => {
     console.log("Download button clicked!");
+    setIsDownloading(true);
     try {
       const cleanList = (list) =>
         [...list].filter(Boolean).map((c) =>
@@ -225,12 +229,14 @@ const WorldMap = () => {
       };
   
       doc.setFontSize(11);
-      const splitSummary = doc.splitTextToSize(aiMessage, 170);
+      const splitSummary = doc.splitTextToSize(aiMessage, 180);
       renderFormattedText(doc, splitSummary, 20, 110);
       doc.save("MapIt_Certificate.pdf");
+      setIsDownloading(false);
     } catch (error) {
       toast.error("Failed to generate certificate.");
       console.error("PDF error:", error);
+      setIsDownloading(false);
     }
   };
   
@@ -366,6 +372,7 @@ const WorldMap = () => {
     <div>
       <ToastContainer autoClose={3000} hideProgressBar={false} closeOnClick pauseOnFocusLoss draggable pauseOnHover />
       {loading && <Loader state={loading} />}
+      {isDownloading && <AILoader state={isDownloading} />}
       {!loading && (
       <div className="container">
         <div className="header-container">
@@ -467,6 +474,7 @@ const WorldMap = () => {
           onClick={handleRobotClick}
         >
           <FaRobot size={30} />
+          <span className="robot-tooltip">AI insights</span>
         </div>
       )}
 
