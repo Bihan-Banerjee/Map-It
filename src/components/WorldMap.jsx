@@ -190,7 +190,7 @@ console.error("Error fetching robot response:", error);
         img.onload = () => resolve(img);
       });
   
-      const headerImg = await loadImage("../public/header.png");
+      const headerImg = await loadImage("/header.png");
   
       const doc = new jsPDF();
       doc.addImage(headerImg, "PNG", 0, 0, 210, 25);
