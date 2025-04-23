@@ -4,6 +4,9 @@ import Autosuggest from 'react-autosuggest';
 import "leaflet/dist/leaflet.css";
 import worldGeoJSON from "../world-geo.json"; 
 import L from "leaflet";
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 import "./WorldMap.css"; 
 import axios from "axios";
 import Loader from "./Loader";
@@ -16,7 +19,13 @@ import jsPDF from "jspdf";
 import "jspdf-autotable";
 import DownloadButton from "./DownloadButton";
 import AILoader from "./AILoader";
+delete L.Icon.Default.prototype._getIconUrl;
 
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: markerIcon2x,
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
+});
 const WorldMap = () => {
   const [mode, setMode] = useState("city"); 
   const [visitedCities, setVisitedCities] = useState([]);
