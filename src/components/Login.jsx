@@ -15,7 +15,7 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/login", formData);
+      const res = await axios.post("https://map-it-backend-a3pq.onrender.com/api/auth/login", formData);
       localStorage.setItem("token", res.data.token);
       toast.success("Login successful!");
       navigate("/world-map");

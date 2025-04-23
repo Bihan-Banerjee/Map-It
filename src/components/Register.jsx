@@ -35,7 +35,7 @@ function Register() {
     }
   
     try {
-      await axios.post("http://localhost:5000/api/auth/register", formData);
+      await axios.post("https://map-it-backend-a3pq.onrender.com/api/auth/register", formData);
       toast.success("Registration successful! Please log in.");
       setTimeout(() => navigate("/login"), 2000);
     } catch (err) {

@@ -65,7 +65,7 @@ const WorldMap = () => {
       const cleanCountries = cleanList(visitedCountries);
       const cleanCities = cleanList(visitedCities);
       const prompt = `The user has visited the following countries: ${cleanCountries.join(", ")} and cities: ${cleanCities.join(", ")}. Compose a brief travel summary (within 50-75 words) in a light, mildly formal, and engaging tone — like a note from a seasoned travel writer. Avoid asking the user any questions. You may reference famous landmarks, local dishes, or cultural moments from these places. Use only English text, but localized words in English (like 'gelato' or 'siesta') are allowed. No font changes or non-English scripts. You can add tasteful emojis to enhance warmth. End with a charming remark if fitting.`;
-      const response = await axios.post('http://localhost:5000/api/gemini/analyze', { prompt });
+      const response = await axios.post('https://map-it-backend-a3pq.onrender.com/api/gemini/analyze', { prompt });
       setRobotResponse(response.data.message);
       setShowBubble(true);
   
@@ -91,7 +91,7 @@ console.error("Error fetching robot response:", error);
     const fetchUserName = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get("http://localhost:5000/api/get-username", {
+        const response = await axios.get("https://map-it-backend-a3pq.onrender.com/api/get-username", {
           headers: { Authorization: `Bearer ${token}` }, 
         });
         const { username } = response.data; 
@@ -107,7 +107,7 @@ console.error("Error fetching robot response:", error);
     const loadData = async () => {
       try {
         const token = localStorage.getItem("token"); 
-        const response = await axios.get("http://localhost:5000/api/get-data", {
+        const response = await axios.get("https://map-it-backend-a3pq.onrender.com/api/get-data", {
           headers: { Authorization: `Bearer ${token}` }, 
         });
         const { visitedCities, visitedCountries } = response.data;
@@ -172,7 +172,7 @@ console.error("Error fetching robot response:", error);
   
       const prompt = `The user has visited the following countries: ${cleanCountries.join(", ")} and cities: ${cleanCities.join(", ")}. Write a clear, formal, friendly (no emojis) travel analysis (150-180 words) summarizing their travel history, suggesting future destinations, and describing travel trends. Organize the response under titled sections: 'Travel Highlights', 'Potential Future Destinations', and 'Overall Insights' and write them in the format **Section Title:**. Reduce the spacing between heading and passage but keep old spacing between passage and next heading. Highlight names of countries and cities and continents both visited or suggested by you in the passage in the format **keyword** but do not alter any other formatting. Moreover this formatting for key words should be done to each word such that for example South America becomes **South** **America**. Avoid redundant phrasing like "(listed redundantly with 'City, Country')". Be concise, clean, and elegant in tone.`;
   
-      const response = await axios.post("http://localhost:5000/api/gemini/analyze", { prompt });
+      const response = await axios.post("https://map-it-backend-a3pq.onrender.com/api/gemini/analyze", { prompt });
       const aiMessage = response.data.message;
   
       const loadImage = (src) => new Promise((resolve) => {
@@ -304,7 +304,7 @@ console.error("Error fetching robot response:", error);
   const saveData = async () => {
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:5000/api/save-data', 
+      await axios.post('https://map-it-backend-a3pq.onrender.com/api/save-data', 
         { visitedCities, visitedCountries, statistics },
         { headers: { Authorization: `Bearer ${token}` } }
       );
